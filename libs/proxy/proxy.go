@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"github.com/liuzheng/golog"
+	"io/ioutil"
 	"net"
 	"net/http"
 )
@@ -39,4 +40,34 @@ func (s *Server) Start() {
 func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	golog.Debug(lname, "%v", r.Host)
 	golog.Debug(lname, "%v", r.RequestURI)
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest(r.Method, r.Host+r.RequestURI, r.Body)
+	//req, err := http.NewRequest(r.Method, "http://www.baidu.com"+r.RequestURI, r.Body)
+	if err != nil {
+		golog.Error(lname, "%v", err)
+
+	}
+	if len(r.Header) > 0 {
+		for k, v := range r.Header {
+			//fmt.Printf("%s=%s\n", k, v[0])
+			req.Header.Set(k, v[0])
+		}
+	}
+
+	resp, err := client.Do(req)
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		golog.Error(lname, "%v", err)
+	}
+	if len(resp.Header) > 0 {
+		for k, v := range resp.Header {
+			w.Header().Set(k, v[0])
+		}
+	}
+	w.Write(body)
 }
