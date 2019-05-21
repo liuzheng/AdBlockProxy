@@ -1,0 +1,6 @@
+github.com/liuzheng/golog v0.0.0-20180408025518-011aa0099621 h1:j29wSYEidfTvRInCQnB2uDQEz4EgFPN9D5JHBb0pz4o=
+github.com/liuzheng/golog v0.0.0-20180408025518-011aa0099621/go.mod h1:95ayiZiOiwM44112vpV/3Dl5DLvPPxB5e8zwzMKsqWI=
+github.com/op/go-logging v0.0.0-20160315200505-970db520ece7 h1:lDH9UUVJtmYCjyT0CI4q8xvlXPxeZ0gYCVvWbmPlp88=
+github.com/op/go-logging v0.0.0-20160315200505-970db520ece7/go.mod h1:HzydrMdWErDVzsI23lYNej1Htcns9BCg93Dk0bBINWk=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
