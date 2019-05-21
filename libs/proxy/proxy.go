@@ -56,6 +56,10 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	for _, c := range r.Cookies() {
+		req.AddCookie(c)
+	}
+
 	resp, err := client.Do(req)
 
 	defer resp.Body.Close()
@@ -68,6 +72,9 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 		for k, v := range resp.Header {
 			w.Header().Set(k, v[0])
 		}
+	}
+	for _, c := range resp.Cookies() {
+		http.SetCookie(w, c)
 	}
 	w.Write(body)
 }
