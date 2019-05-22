@@ -1,9 +1,9 @@
 package main
 
 import (
-	_ "github.com/liuzheng/golog"
 	"AdBlockProxy/libs/proxy"
 	"flag"
+	_ "github.com/liuzheng/golog"
 )
 
 const (
