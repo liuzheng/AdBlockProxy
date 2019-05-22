@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"time"
 )
 
 const lname = "proxy"
@@ -41,17 +42,22 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	golog.Debug(lname, "%v", r.Host)
 	golog.Debug(lname, "%v", r.RequestURI)
 
-	client := &http.Client{}
-
-	req, err := http.NewRequest(r.Method, r.Host+r.RequestURI, r.Body)
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
+	golog.Debug(lname, "%v  %v  %v", r.Method, r.Header.Get("protocol-scheme"), r.Host+r.RequestURI)
+	req, err := http.NewRequest(r.Method, r.Header.Get("protocol-scheme")+"://"+r.Host+r.RequestURI, r.Body)
 	//req, err := http.NewRequest(r.Method, "http://www.baidu.com"+r.RequestURI, r.Body)
 	if err != nil {
 		golog.Error(lname, "%v", err)
 
 	}
+	r.Header.Del("protocol-scheme") // use nginx to set this things
+	r.Header.Del("If-None-Match")
+	r.Header.Del("If-Modified-Since")
 	if len(r.Header) > 0 {
 		for k, v := range r.Header {
-			//fmt.Printf("%s=%s\n", k, v[0])
+			golog.Debug(lname, "r.Header: %s=%s", k, v[0])
 			req.Header.Set(k, v[0])
 		}
 	}
@@ -61,18 +67,22 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := client.Do(req)
-
+	if err != nil {
+		golog.Error(lname, "client.Do %v", err)
+	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		golog.Error(lname, "%v", err)
 	}
+	//golog.Debug(lname, "%v", body)
 	if len(resp.Header) > 0 {
 		for k, v := range resp.Header {
 			w.Header().Set(k, v[0])
 		}
 	}
+	w.Header().Set("proxy", "AdBlockProxy1.0")
 	for _, c := range resp.Cookies() {
 		http.SetCookie(w, c)
 	}
