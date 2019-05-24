@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"AdBlockProxy/libs/config"
 	"github.com/liuzheng/golog"
 	"io/ioutil"
 	"net"
@@ -11,21 +12,15 @@ import (
 
 const lname = "proxy"
 
-type blackURIlist struct {
-	uriRE  string
-	action string
-}
 type Server struct {
-	listener    net.Listener
-	Addr        string
-	credential  string
-	BlackDomain map[string][]blackURIlist
+	listener   net.Listener
+	Addr       string
+	credential string
 }
 
 func (s *Server) Start() {
 	//var err error
 	golog.Info(lname, "Start service at %v", s.Addr)
-	s.BlackDomain = map[string][]blackURIlist{}
 	//s.listener, err = net.Listen("tcp", s.Addr)
 	//if err != nil {
 	//	golog.Error(lname, "Error listening: %v", err)
@@ -52,15 +47,15 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 
 	black_action := ""
 	// block checker
-	if _, ok := s.BlackDomain[r.Host]; ok {
-		for _, v := range s.BlackDomain[r.Host] {
-			golog.Debug(lname, "%v", v)
-			mached, err := regexp.MatchString(v.uriRE, r.RequestURI)
+	if _, ok := config.Config.Blacklist[r.Host]; ok {
+		for host, v := range config.Config.Blacklist[r.Host] {
+			golog.Debug(lname, "host:%v ", host)
+			mached, err := regexp.MatchString(v.UriRe, r.RequestURI)
 			if err != nil {
 				golog.Error(lname, "%v", err)
 			}
 			if mached {
-				black_action = v.action
+				black_action = v.Action
 				break
 			}
 		}
@@ -118,5 +113,5 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(body)
 }
-func (s *Server)loadBlockList()  {
- }
+func (s *Server) loadBlockList() {
+}

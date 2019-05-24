@@ -8,33 +8,36 @@ import (
 	"path/filepath"
 )
 
+const lname = "config"
+
 var (
-	config = flag.String("c", "example.yml", "Print the version and exit")
+	config = flag.String("c", "config.yaml", "Print the version and exit")
 )
 
 type Configer struct {
 	//Module      []Module `yaml:"module"`
-	Yaml []byte
+	yaml []byte
 	//Output      map[string]interface{}
 	//Modules     map[string]interface{}
 
-	Outputs map[string]interface{}
-	//LogLevelF   string
-	//LogLevelB   string
-	LogFilePath string
+	outputs     map[string]interface{}
 
 	Log struct {
 		ConsoleLevel string `yaml:consoleLevel`
 		Level        string `yaml:"level"`
 		Path         string `yaml:"path"`
 	} `yaml:"log"`
+	Blacklist map[string][]struct {
+		UriRe  string `yaml:uri`
+		Action string `yaml:action`
+	} `yaml:blacklist`
 }
 
 var Config *Configer = &Configer{
 	//Output:make(map[string]interface{}),
 	//Module: make([]Module, 20),
 	//Modules: make(map[string]interface{}),
-	Outputs: make(map[string]interface{}),
+	//Outputs: make(map[string]interface{}),
 }
 
 func LoadConfig() {
@@ -47,9 +50,9 @@ func LoadConfig() {
 	yamlFile, err := ioutil.ReadFile(filename)
 	if err != nil {
 		golog.Error("ReadFile", "error: %v", err)
-		panic(err)
+		return
 	}
-	Config.Yaml = yamlFile
+	Config.yaml = yamlFile
 	//zoo.Load(&Config.Yaml)
 
 	err = yaml.Unmarshal(yamlFile, &Config)
@@ -81,4 +84,15 @@ func LoadConfig() {
 	//    golog.Info("LoadConfig", "Loading %s config", name)
 	//    f.(func())()
 	//}
+}
+func DumpConfig() (err error) {
+	d, err := yaml.Marshal(&Config)
+	if err != nil {
+		golog.Error(lname, "yaml.Marshal: %v", err)
+	}
+	err = ioutil.WriteFile("config.yaml", d, 0644)
+	if err != nil {
+		golog.Error(lname, "ioutil.WriteFile: %v", err)
+	}
+	return
 }
