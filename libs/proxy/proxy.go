@@ -4,23 +4,18 @@ import (
 	"AdBlockProxy/libs/config"
 	"github.com/liuzheng/golog"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"regexp"
+	"strconv"
 	"time"
 )
 
 const lname = "proxy"
 
-type Server struct {
-	listener   net.Listener
-	Addr       string
-	credential string
-}
-
-func (s *Server) Start() {
+func Start() {
 	//var err error
-	golog.Info(lname, "Start service at %v", s.Addr)
+	addr := config.Config.Server + ":" + strconv.Itoa(int(config.Config.Listen))
+	golog.Info(lname, "Start service at %v", addr)
 	//s.listener, err = net.Listen("tcp", s.Addr)
 	//if err != nil {
 	//	golog.Error(lname, "Error listening: %v", err)
@@ -36,11 +31,11 @@ func (s *Server) Start() {
 	//
 	//	go s.handler(conn)
 	//}
-	http.HandleFunc("/", s.handler)
+	http.HandleFunc("/", handler)
 
-	http.ListenAndServe(s.Addr, nil)
+	http.ListenAndServe(addr, nil)
 }
-func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
+func handler(w http.ResponseWriter, r *http.Request) {
 	golog.Debug(lname, "%v", r.Host)
 	golog.Debug(lname, "%v", r.RequestURI)
 	w.Header().Set("proxy", "AdBlockProxy1.0")
@@ -63,6 +58,7 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 
 	// block action
 	if black_action != "" {
+		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("blocked"))
 		return
 	}
@@ -71,8 +67,15 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
-	golog.Debug(lname, "%v  %v  %v", r.Method, r.Header.Get("protocol-scheme"), r.Host+r.RequestURI)
-	req, err := http.NewRequest(r.Method, r.Header.Get("protocol-scheme")+"://"+r.Host+r.RequestURI, r.Body)
+	protocol_scheme := r.Header.Get("protocol-scheme")
+	golog.Debug(lname, "%v  %v  %v", r.Method, protocol_scheme, r.Host+r.RequestURI)
+	if protocol_scheme == "" {
+		golog.Error(lname, "Proto Scheme is not defined")
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Error, Please check the log"))
+		return
+	}
+	req, err := http.NewRequest(r.Method, protocol_scheme+"://"+r.Host+r.RequestURI, r.Body)
 	//req, err := http.NewRequest(r.Method, "http://www.baidu.com"+r.RequestURI, r.Body)
 	if err != nil {
 		golog.Error(lname, "%v", err)
@@ -113,5 +116,5 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Write(body)
 }
-func (s *Server) loadBlockList() {
+func loadBlockList() {
 }

@@ -18,8 +18,7 @@ const (
 func main() {
 	flag.Parse()
 	config.LoadConfig()
-	service := proxy.Server{Addr: "0.0.0.0:8080"}
-	go service.Start()
+	go proxy.Start()
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 	<-signals

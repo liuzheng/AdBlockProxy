@@ -20,17 +20,19 @@ type Configer struct {
 	//Output      map[string]interface{}
 	//Modules     map[string]interface{}
 
-	outputs     map[string]interface{}
+	outputs   map[string]interface{}
+	Server    string `yaml:"server"`
+	Listen    uint16 `yaml:"listen"`
+	Blacklist map[string][]struct {
+		UriRe  string `yaml:"uri"`
+		Action string `yaml:"action"`
+	} `yaml:"blacklist"`
 
 	Log struct {
-		ConsoleLevel string `yaml:consoleLevel`
+		ConsoleLevel string `yaml:"consoleLevel"`
 		Level        string `yaml:"level"`
 		Path         string `yaml:"path"`
 	} `yaml:"log"`
-	Blacklist map[string][]struct {
-		UriRe  string `yaml:uri`
-		Action string `yaml:action`
-	} `yaml:blacklist`
 }
 
 var Config *Configer = &Configer{
@@ -59,6 +61,15 @@ func LoadConfig() {
 	if err != nil {
 		golog.Error("yaml", "yaml.Unmarshal : %v", err)
 		panic(err)
+	}
+	if Config.Listen < 80 {
+		Config.Listen = 8080
+	}
+	if Config.Server == "" {
+		Config.Server = "127.0.0.1"
+	}
+	if Config.Log.ConsoleLevel == "" {
+		Config.Log.ConsoleLevel = "INFO"
 	}
 
 	//log := struct {
@@ -90,6 +101,7 @@ func DumpConfig() (err error) {
 	if err != nil {
 		golog.Error(lname, "yaml.Marshal: %v", err)
 	}
+
 	err = ioutil.WriteFile("config.yaml", d, 0644)
 	if err != nil {
 		golog.Error(lname, "ioutil.WriteFile: %v", err)
