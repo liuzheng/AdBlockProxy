@@ -1,6 +1,7 @@
 package main
 
 import (
+	"AdBlockProxy/libs/config"
 	"AdBlockProxy/libs/proxy"
 	"flag"
 	_ "github.com/liuzheng/golog"
@@ -13,6 +14,7 @@ const (
 
 func main() {
 	flag.Parse()
+	config.LoadConfig()
 	service := proxy.Server{Addr: "0.0.0.0:8080"}
 	service.Start()
 	//signals := make(chan os.Signal, 1)

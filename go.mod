@@ -6,5 +6,5 @@ replace AdBlockProxy/libs => ./libs
 
 require (
 	AdBlockProxy/libs v0.0.0-00010101000000-000000000000
-	github.com/liuzheng/golog v0.0.0-20180408025518-011aa0099621
+	github.com/liuzheng/golog v0.0.0-20190524021848-42631d0dbbe4
 )

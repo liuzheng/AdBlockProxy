@@ -7,21 +7,29 @@ import (
 	"io/ioutil"
 	"path/filepath"
 )
+
 var (
 	config = flag.String("c", "example.yml", "Print the version and exit")
 )
 
 type Configer struct {
 	//Module      []Module `yaml:"module"`
-	Yaml        []byte
+	Yaml []byte
 	//Output      map[string]interface{}
 	//Modules     map[string]interface{}
 
-	Outputs     map[string]interface{}
-	LogLevelF   string
-	LogLevelB   string
+	Outputs map[string]interface{}
+	//LogLevelF   string
+	//LogLevelB   string
 	LogFilePath string
+
+	Log struct {
+		ConsoleLevel string `yaml:consoleLevel`
+		Level        string `yaml:"level"`
+		Path         string `yaml:"path"`
+	} `yaml:"log"`
 }
+
 var Config *Configer = &Configer{
 	//Output:make(map[string]interface{}),
 	//Module: make([]Module, 20),
@@ -50,24 +58,24 @@ func LoadConfig() {
 		panic(err)
 	}
 
-	log := struct {
-		Log struct {
-			Level string `yaml:"level"`
-			Path  string  `yaml:"path"`
-		} `yaml:"log"`
-	}{}
-	log.Log.Level = "INFO"
-	log.Log.Path = ""
-	err = yaml.Unmarshal(yamlFile, &log)
-	if err != nil {
-		golog.Error("yaml", "yaml.Unmarshal : %v", err)
-		panic(err)
-	}
+	//log := struct {
+	//	Log struct {
+	//		Level string `yaml:"level"`
+	//		Path  string  `yaml:"path"`
+	//	} `yaml:"log"`
+	//}{}
+	//log.Log.Level = "INFO"
+	//log.Log.Path = ""
+	//err = yaml.Unmarshal(yamlFile, &log)
+	//if err != nil {
+	//	golog.Error("yaml", "yaml.Unmarshal : %v", err)
+	//	panic(err)
+	//}
 
-	Config.LogLevelB = log.Log.Level
-	Config.LogFilePath = log.Log.Path
+	//Config.LogLevelB = log.Log.Level
+	//Config.LogFilePath = log.Log.Path
 	//golog.Info("Config", "%v", log)
-	golog.Logs(Config.LogFilePath, Config.LogLevelF, Config.LogLevelB)
+	golog.Logs(Config.Log.Path, Config.Log.ConsoleLevel, Config.Log.Level)
 
 	//for name, f := range Config.Outputs {
 	//    golog.Info("LoadConfig", "Loading %s config", name)

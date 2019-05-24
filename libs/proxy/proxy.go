@@ -5,20 +5,27 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"regexp"
 	"time"
 )
 
 const lname = "proxy"
 
+type blackURIlist struct {
+	uriRE  string
+	action string
+}
 type Server struct {
-	listener   net.Listener
-	Addr       string
-	credential string
+	listener    net.Listener
+	Addr        string
+	credential  string
+	BlackDomain map[string][]blackURIlist
 }
 
 func (s *Server) Start() {
 	//var err error
 	golog.Info(lname, "Start service at %v", s.Addr)
+	s.BlackDomain = map[string][]blackURIlist{}
 	//s.listener, err = net.Listen("tcp", s.Addr)
 	//if err != nil {
 	//	golog.Error(lname, "Error listening: %v", err)
@@ -41,7 +48,31 @@ func (s *Server) Start() {
 func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	golog.Debug(lname, "%v", r.Host)
 	golog.Debug(lname, "%v", r.RequestURI)
+	w.Header().Set("proxy", "AdBlockProxy1.0")
 
+	black_action := ""
+	// block checker
+	if _, ok := s.BlackDomain[r.Host]; ok {
+		for _, v := range s.BlackDomain[r.Host] {
+			golog.Debug(lname, "%v", v)
+			mached, err := regexp.MatchString(v.uriRE, r.RequestURI)
+			if err != nil {
+				golog.Error(lname, "%v", err)
+			}
+			if mached {
+				black_action = v.action
+				break
+			}
+		}
+	}
+
+	// block action
+	if black_action != "" {
+		w.Write([]byte("blocked"))
+		return
+	}
+
+	// none block do
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
@@ -82,9 +113,10 @@ func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set(k, v[0])
 		}
 	}
-	w.Header().Set("proxy", "AdBlockProxy1.0")
 	for _, c := range resp.Cookies() {
 		http.SetCookie(w, c)
 	}
 	w.Write(body)
 }
+func (s *Server)loadBlockList()  {
+ }
