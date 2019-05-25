@@ -1,0 +1,14 @@
+[Unit]
+Description=AdBlock Proxy
+After=syslog.target
+After=network.target
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/AdBlockProxy
+ExecStart=/opt/AdBlockProxy/adblockproxy
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

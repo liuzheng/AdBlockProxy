@@ -1,0 +1,10 @@
+server: 127.0.0.1
+listen: 8080
+blacklist:
+  data.video.ptqy.gitv.tv:
+  - uri: /videos/other/.*
+    action: "no"
+log:
+  consoleLevel: INFO
+  level: ERROR
+  path: /tmp/adblockproxy.log
