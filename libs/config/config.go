@@ -14,6 +14,12 @@ var (
 	config = flag.String("c", "config.yaml", "Print the version and exit")
 )
 
+type URI struct {
+	UriRe  string `yaml:"uri"`
+	Action string `yaml:"action"`
+	Code   int    `yaml:"code"`
+	Proxy  string `yaml:"proxy"`
+}
 type Configer struct {
 	//Module      []Module `yaml:"module"`
 	yaml []byte
@@ -21,13 +27,14 @@ type Configer struct {
 	//Modules     map[string]interface{}
 
 	outputs   map[string]interface{}
-	Server    string `yaml:"server"`
-	Listen    uint16 `yaml:"listen"`
-	Blacklist map[string][]struct {
-		UriRe  string `yaml:"uri"`
-		Action string `yaml:"action"`
-	} `yaml:"blacklist"`
-
+	Server    string           `yaml:"server"`
+	Listen    uint16           `yaml:"listen"`
+	Blacklist map[string][]URI `yaml:"blacklist"`
+	ProxyList struct {
+		Username string   `yaml:"username"`
+		Password string   `yaml:"password"`
+		Urls     []string `yaml:"url"`
+	} `yaml:"proxy"`
 	Log struct {
 		ConsoleLevel string `yaml:"consoleLevel"`
 		Level        string `yaml:"level"`

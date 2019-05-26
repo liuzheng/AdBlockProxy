@@ -1,10 +1,13 @@
 package proxy
 
 import (
-	"AdBlockProxy/libs/config"
+	"crypto/tls"
+	//"AdBlockProxy/libs/config"
 	"github.com/liuzheng/golog"
 	"io/ioutil"
+	"libs/config"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"time"
@@ -40,7 +43,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	golog.Debug(lname, "%v", r.RequestURI)
 	w.Header().Set("proxy", "AdBlockProxy1.0")
 
-	black_action := ""
+	var matchURI config.URI
+	var client *http.Client
 	// block checker
 	if _, ok := config.Config.Blacklist[r.Host]; ok {
 		for host, v := range config.Config.Blacklist[r.Host] {
@@ -50,23 +54,49 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				golog.Error(lname, "%v", err)
 			}
 			if mached {
-				black_action = v.Action
+				matchURI = v
 				break
 			}
 		}
 	}
 
 	// block action
-	if black_action != "" {
+	switch matchURI.Action {
+	case "proxy":
+		proxy, _ := url.Parse(matchURI.Proxy)
+		proxy.User = url.UserPassword(config.Config.ProxyList.Username, config.Config.ProxyList.Password)
+		tr := &http.Transport{
+			Proxy:           http.ProxyURL(proxy),
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		client = &http.Client{
+			Transport: tr,
+			Timeout:   5 * time.Second,
+		}
+	case "":
+		client = &http.Client{
+			Timeout: 5 * time.Second,
+		}
+	case "block":
+		if matchURI.Code == 0 {
+			w.WriteHeader(http.StatusForbidden)
+		} else {
+			w.WriteHeader(matchURI.Code)
+		}
+		w.Write([]byte("blocked"))
+		return
+	default:
 		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("blocked"))
 		return
 	}
+	//if black_action != "" {
+	//	w.WriteHeader(http.StatusForbidden)
+	//	w.Write([]byte("blocked"))
+	//	return
+	//}
 
 	// none block do
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-	}
 	protocol_scheme := r.Header.Get("protocol-scheme")
 	golog.Debug(lname, "%v  %v  %v", r.Method, protocol_scheme, r.Host+r.RequestURI)
 	if protocol_scheme == "" {
