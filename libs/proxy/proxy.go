@@ -66,7 +66,9 @@ func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 	case "proxy":
 		golog.Debug(lname, "proxy")
 		proxy, _ := url.Parse(matchURI.Proxy)
-		proxy.User = url.UserPassword(config.Config.ProxyList.Username, config.Config.ProxyList.Password)
+		if config.Config.ProxyList.Username != "" {
+			proxy.User = url.UserPassword(config.Config.ProxyList.Username, config.Config.ProxyList.Password)
+		}
 		//proxy.Scheme = "https"
 		golog.Debug(lname, "%v", proxy)
 		client.Transport = &http.Transport{
