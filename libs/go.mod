@@ -1,4 +1,4 @@
-module libs
+module AdBlockProxy/libs
 
 go 1.12
 

@@ -25,6 +25,7 @@ func main() {
 
 	http.HandleFunc("/", proxy.ProxyHandler)
 	http.HandleFunc("/adblockproxy/v1/loadconfig", api.LoadConfig)
+	http.HandleFunc("/adblockproxy/v1/hosts", api.Hosts)
 	http.HandleFunc("/adblockproxy/v1/dumpconfig", api.DumpConfig)
 	http.ListenAndServe(addr, nil)
 
