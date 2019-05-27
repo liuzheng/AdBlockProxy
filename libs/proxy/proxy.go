@@ -1,44 +1,43 @@
 package proxy
 
 import (
+	"AdBlockProxy/libs/config"
 	"crypto/tls"
-	//"AdBlockProxy/libs/config"
 	"github.com/liuzheng/golog"
 	"io/ioutil"
-	"libs/config"
+	//"libs/config"
 	"net/http"
 	"net/url"
 	"regexp"
-	"strconv"
 	"time"
 )
 
 const lname = "proxy"
 
-func Start() {
-	//var err error
-	addr := config.Config.Server + ":" + strconv.Itoa(int(config.Config.Listen))
-	golog.Info(lname, "Start service at %v", addr)
-	//s.listener, err = net.Listen("tcp", s.Addr)
-	//if err != nil {
-	//	golog.Error(lname, "Error listening: %v", err)
-	//	os.Exit(1)
-	//}
-	//defer s.listener.Close()
-	//for {
-	//	conn, err := s.listener.Accept()
-	//	if err != nil {
-	//		golog.Error(lname, "Error accepting: %v", err)
-	//		os.Exit(1)
-	//	}
-	//
-	//	go s.handler(conn)
-	//}
-	http.HandleFunc("/", handler)
-
-	http.ListenAndServe(addr, nil)
-}
-func handler(w http.ResponseWriter, r *http.Request) {
+//func Start() {
+//	//var err error
+//	addr := config.Config.Server + ":" + strconv.Itoa(int(config.Config.Listen))
+//	golog.Info(lname, "Start service at %v", addr)
+//	//s.listener, err = net.Listen("tcp", s.Addr)
+//	//if err != nil {
+//	//	golog.Error(lname, "Error listening: %v", err)
+//	//	os.Exit(1)
+//	//}
+//	//defer s.listener.Close()
+//	//for {
+//	//	conn, err := s.listener.Accept()
+//	//	if err != nil {
+//	//		golog.Error(lname, "Error accepting: %v", err)
+//	//		os.Exit(1)
+//	//	}
+//	//
+//	//	go s.handler(conn)
+//	//}
+//	http.HandleFunc("/", handler)
+//
+//	http.ListenAndServe(addr, nil)
+//}
+func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 	golog.Debug(lname, "%v", r.Host)
 	golog.Debug(lname, "%v", r.RequestURI)
 	w.Header().Set("proxy", "AdBlockProxy1.0")

@@ -31,9 +31,12 @@ type Configer struct {
 	Listen    uint16           `yaml:"listen"`
 	Blacklist map[string][]URI `yaml:"blacklist"`
 	ProxyList struct {
-		Username string   `yaml:"username"`
-		Password string   `yaml:"password"`
-		Urls     []string `yaml:"url"`
+		Username string `yaml:"username"`
+		Password string `yaml:"password"`
+		Urls     []struct {
+			Name string `yaml:"name"`
+			Url  string `yaml:"url"`
+		} `yaml:"url"`
 	} `yaml:"proxy"`
 	Log struct {
 		ConsoleLevel string `yaml:"consoleLevel"`
