@@ -43,7 +43,7 @@ func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("proxy", "AdBlockProxy1.0")
 
 	var matchURI config.URI
-	var client *http.Client
+
 	// block checker
 	if _, ok := config.Config.Blacklist[r.Host]; ok {
 		for host, v := range config.Config.Blacklist[r.Host] {
@@ -58,23 +58,20 @@ func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
 	// block action
 	switch matchURI.Action {
 	case "proxy":
+		golog.Debug(lname, "proxy")
 		proxy, _ := url.Parse(matchURI.Proxy)
 		proxy.User = url.UserPassword(config.Config.ProxyList.Username, config.Config.ProxyList.Password)
-		tr := &http.Transport{
+		//proxy.Scheme = "https"
+		golog.Debug(lname, "%v", proxy)
+		client.Transport = &http.Transport{
 			Proxy:           http.ProxyURL(proxy),
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
-		client = &http.Client{
-			Transport: tr,
-			Timeout:   5 * time.Second,
-		}
-	case "":
-		client = &http.Client{
-			Timeout: 5 * time.Second,
 		}
 	case "block":
 		if matchURI.Code == 0 {
@@ -85,9 +82,8 @@ func ProxyHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("blocked"))
 		return
 	default:
-		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte("blocked"))
-		return
+
+		golog.Debug(lname, "conncet %v", matchURI)
 	}
 	//if black_action != "" {
 	//	w.WriteHeader(http.StatusForbidden)
